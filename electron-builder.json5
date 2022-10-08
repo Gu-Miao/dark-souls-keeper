@@ -5,7 +5,8 @@
   appId: 'com.elecron.dark-souls-keeper',
   asar: true,
   directories: {
-    output: 'release/${version}'
+    output: 'release',
+    buildResources: 'public'
   },
   files: ['dist'],
   win: {
