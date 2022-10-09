@@ -1,6 +1,6 @@
 {
   "name": "dark-souls-keeper",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "A save manager for Dark Souls",
   "main": "dist/electron/main.js",
   "author": {
