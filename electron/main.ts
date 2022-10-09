@@ -12,13 +12,18 @@ process.env.PUBLIC = app.isPackaged ? process.env.DIST : join(process.env.DIST, 
 
 import path, { join } from 'path'
 import { app, BrowserWindow } from 'electron'
+import { registerIpc } from './ipc'
+import { setMenu } from './menu'
 
-let win: BrowserWindow | null
 const preload = join(__dirname, './preload.js')
 const url = process.env['VITE_DEV_SERVER_URL']
 
+let win: BrowserWindow | null
+
 function createWindow() {
   win = new BrowserWindow({
+    minWidth: 800,
+    minHeight: 640,
     show: false,
     center: true,
     icon: path.join(process.env.PUBLIC, 'icon.ico'),
@@ -35,6 +40,9 @@ function createWindow() {
   } else {
     win.loadURL(url)
   }
+
+  registerIpc()
+  setMenu(win)
 }
 
 app.on('window-all-closed', () => {

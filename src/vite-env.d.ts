@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 
-type IpcChannel = import('../electron/preload').IpcChannel
+type IpcChannel = import('../electron/ipc').IpcChannel
 
 interface Window {
   electron: {
