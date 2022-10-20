@@ -31,8 +31,15 @@ async function isKeeperPathExist() {
 export type Save = {
   id: string
   name: string
+  type: 'DarkSouls' | 'DarkSoulsII' | 'DarkSoulsIII' | 'Sekiro' | 'EldenRing'
   description: string
   createdAt: string
+}
+
+export type BackupData = {
+  name?: string
+  type?: Save['type']
+  description?: string
 }
 
 export async function getSaves(): Promise<[false, Save[]] | [true]> {
@@ -46,10 +53,7 @@ export async function getSaves(): Promise<[false, Save[]] | [true]> {
   }
 }
 
-export async function backup(data: {
-  name: string
-  description: string
-}): Promise<[false, Save] | [string]> {
+export async function backup(data: BackupData): Promise<[false, Save] | [string]> {
   if (data.name && saveListData.find(save => save.name === data.name)) {
     return ['Duplicate naming']
   }
@@ -58,9 +62,10 @@ export async function backup(data: {
   const createdAt = now.format('YYYY-MM-DD HH:mm:ss')
   const name = data.name || `Quick backup ${now.format('YYYY-MM-DD HHmmss')}`
   const description = data.description || `Created at ${createdAt}`
+  const type = data.type || 'DarkSoulsIII'
   try {
     await cp(savePath, join(keeperPath, name), { recursive: true })
-    const save = { id, name, description, createdAt }
+    const save: Save = { id, name, description, createdAt, type }
     saveListData = [...saveListData, save]
     await writeFile(saveListPath, JSON.stringify(saveListData))
     return [false, save]

@@ -10,7 +10,8 @@
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
-    "outDir": "dist"
+    "outDir": "dist",
+    "types": ["element-plus/global"]
   },
   "include": ["electron", "src", "vite.config.ts"]
 }

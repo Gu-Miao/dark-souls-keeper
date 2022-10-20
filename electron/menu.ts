@@ -4,25 +4,23 @@ const template: MenuItemConstructorOptions[] = [
   {
     label: 'Window',
     submenu: [
-      ...(app.isPackaged
-        ? []
-        : [{ role: 'toggleDevTools', label: 'Toggle DevTools' } as MenuItemConstructorOptions]),
-      { role: 'forceReload', label: 'Reload' },
-      { role: 'minimize', label: 'Minimize' },
-      { role: 'close', label: 'Close' }
+      ...(app.isPackaged ? [] : [{ role: 'toggleDevTools' } as MenuItemConstructorOptions]),
+      { role: 'reload' },
+      { role: 'minimize' },
+      { role: 'close' }
     ]
   },
   {
     label: 'Edit',
     submenu: [
-      { role: 'undo', label: 'Undo' },
-      { role: 'redo', label: 'Redo' },
+      { role: 'undo' },
+      { role: 'redo' },
       { type: 'separator' },
-      { role: 'cut', label: 'Cut' },
-      { role: 'copy', label: 'Copy' },
-      { role: 'paste', label: 'Paste' },
+      { role: 'cut' },
+      { role: 'copy' },
+      { role: 'paste' },
       { type: 'separator' },
-      { role: 'selectAll', label: 'Select All' }
+      { role: 'selectAll' }
     ]
   },
   {
