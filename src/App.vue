@@ -2,12 +2,16 @@
   <div class="container">
     <!-- Header buttons -->
     <header class="header">
-      <el-button type="primary" @click="quickBackup">Quick Backup</el-button>
-      <el-button type="primary" @click="showBackup = true">Backup</el-button>
+      <el-button type="primary" @click="quickBackup">{{ text.quickBackUp }}</el-button>
+      <el-button type="primary" @click="showBackup = true">{{ text.backUp }}</el-button>
+      <el-button type="primary" @click="changeLanguage">
+        <icon-english v-if="lang === 'en'" />
+        <icon-chinese v-else-if="lang === 'zh'" />
+      </el-button>
     </header>
 
     <!-- Search -->
-    <el-input v-model="search" autocomplete="false" placeholder="Search here..." />
+    <el-input v-model="search" autocomplete="false" :placeholder="text.searchPlaceholder" />
 
     <!-- List -->
     <ul class="list">
@@ -18,8 +22,8 @@
 
           <!-- Action buttons -->
           <div class="actions">
-            <el-button type="primary" @click="loadSave(save.id)">Load</el-button>
-            <el-button type="danger" @click="removeSave(save.id)">Remove</el-button>
+            <el-button type="primary" @click="loadSave(save.id)">{{ text.load }}</el-button>
+            <el-button type="danger" @click="removeSave(save.id)">{{ text.remove }}</el-button>
           </div>
         </header>
 
@@ -28,14 +32,14 @@
       </li>
 
       <!-- Empty block -->
-      <div class="empty" v-if="!filteredSaves.length">No save found</div>
+      <div class="empty" v-if="!filteredSaves.length">{{ text.empty }}</div>
     </ul>
   </div>
 
   <!-- Backup dialog -->
   <el-dialog
     v-model="showBackup"
-    title="Backup"
+    :title="text.backUp"
     draggable
     align-center
     @close="closeBackupModal"
@@ -45,28 +49,27 @@
     <el-form :model="backupFormState" ref="formRef" label-position="top">
       <!-- Name -->
       <el-form-item
-        label="name"
+        :label="text.nameLabel"
         prop="name"
         :rules="[{ required: true, validator: nameValidator }]"
       >
-        <el-input v-model="backupFormState.name" placeholder="Save name..." />
+        <el-input v-model="backupFormState.name" :placeholder="text.namePlaceholder" />
       </el-form-item>
 
       <!-- Description -->
-      <el-form-item label="description" prop="description">
+      <el-form-item :label="text.descriptionLabel" prop="description">
         <el-input
-          class="textarea"
           v-model="backupFormState.description"
           type="textarea"
-          placeholder="Some description..."
+          :placeholder="text.descriptionPlaceholder"
           rows="5"
           resize="none"
         />
       </el-form-item>
 
       <!-- Buttons -->
-      <el-button type="primary" native-type="submit">Submit</el-button>
-      <el-button @click="closeBackupModal">Cancel</el-button>
+      <el-button type="primary" native-type="submit">{{ text.submitText }}</el-button>
+      <el-button @click="closeBackupModal">{{ text.cancelText }}</el-button>
     </el-form>
   </el-dialog>
 </template>
@@ -74,13 +77,19 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, FormInstance } from 'element-plus'
-import debounce from 'lodash.debounce'
+import IconChinese from './components/IconChinese.vue'
+import IconEnglish from './components/IconEnglish.vue'
 import { to } from './utils'
+import en from './in18/en'
+import zh from './in18/zh'
 import { Save, BackupData } from '../electron/saves'
 import 'element-plus/es/components/message/style/css'
 import 'element-plus/es/components/message-box/style/css'
 
 const { rendererInvoke } = window.electron
+
+const lang = ref<'en' | 'zh'>('en')
+const text = computed(() => (lang.value === 'en' ? en : zh))
 
 const search = ref<string>('')
 const saves = ref<Save[]>([])
@@ -102,19 +111,20 @@ onMounted(() => {
   getSaves()
 })
 
+function changeLanguage() {
+  lang.value = lang.value === 'en' ? 'zh' : 'en'
+  rendererInvoke('CHANGE_LANGUAGE', lang.value)
+}
+
 function closeBackupModal() {
-  backupFormState.name = undefined
-  backupFormState.type = undefined
-  backupFormState.description = undefined
   showBackup.value = false
+  formRef.value.resetFields()
 }
 
 function nameValidator(_, value: string | undefined, cb: Function) {
-  if (!value?.trim()) return cb(new Error('name is required'))
-  if (!/^.{3,36}$/.test(value))
-    return cb(new Error('The length of the name should be between 3 and 36'))
-  if (/[\\/:*?"<>|]/.test(value))
-    return cb(new Error('Save name can not include \\ / : * ? " < > |'))
+  if (!value?.trim()) return cb(new Error(text.value.nameErrorMessageEmpty))
+  if (!/^.{3,36}$/.test(value)) return cb(new Error(text.value.nameErrorMessageLength))
+  if (/[\\/:*?"<>|]/.test(value)) return cb(new Error(text.value.nameErrorMessageIllegal))
   cb()
 }
 
@@ -127,9 +137,11 @@ async function submitBackup() {
 
 async function quickBackup() {
   const [err] = await to(
-    ElMessageBox.confirm('This will craete a backup named by timestamp', {
-      title: 'Quick back?',
-      type: 'warning'
+    ElMessageBox.confirm(text.value.quickBackUpMessage, {
+      title: text.value.quickBackUp,
+      type: 'warning',
+      confirmButtonText: text.value.okText,
+      cancelButtonText: text.value.cancelText
     })
   )
   if (err) return
@@ -139,11 +151,11 @@ async function quickBackup() {
 async function backup(data: BackupData) {
   const [reason, save] = await rendererInvoke<[false, Save] | [string]>('BACKUP', data)
   if (reason) {
-    ElMessage.error('Backup failed, please try later')
+    ElMessage.error(text.value.backupFailed)
     return false
   }
 
-  ElMessage.success('Backup success!')
+  ElMessage.success(text.value.backupSucceeded)
   saves.value.push(save)
   closeBackupModal()
 }
@@ -151,7 +163,7 @@ async function backup(data: BackupData) {
 async function getSaves() {
   const [failed, data] = await rendererInvoke<[false, Save[]] | [true]>('GET_SAVE_LIST')
   if (failed) {
-    // modal error: Get save list failed
+    ElMessage.error(text.value.gettingSavesFailed)
     return
   }
 
@@ -160,41 +172,42 @@ async function getSaves() {
 
 async function loadSave(id: string) {
   const [err] = await to(
-    ElMessageBox.confirm(
-      `This will overwrite your current archive and it's irreversible, please confirm that you have backed up`,
-      {
-        title: 'Load Save',
-        type: 'warning'
-      }
-    )
+    ElMessageBox.confirm(text.value.loadMessage, {
+      title: text.value.load,
+      type: 'warning',
+      confirmButtonText: text.value.okText,
+      cancelButtonText: text.value.cancelText
+    })
   )
   if (err) return
   const result = await rendererInvoke<boolean>('LOAD', id)
   ElMessage({
-    message: result ? 'Load success!' : 'Load failed, please try later',
+    message: text.value[result ? 'loadingSucceeded' : 'loadingFailed'],
     type: result ? 'success' : 'error'
   })
 }
 
 async function removeSave(id: string) {
   const [err] = await to(
-    ElMessageBox.confirm('Remove this archive (irreversible)', {
-      title: 'Remove backup',
+    ElMessageBox.confirm(text.value.removeMessage, {
+      title: text.value.remove,
       type: 'warning',
-      confirmButtonClass: 'el-button--danger'
+      confirmButtonClass: 'el-button--danger',
+      confirmButtonText: text.value.okText,
+      cancelButtonText: text.value.cancelText
     })
   )
   if (err) return
   const result = await rendererInvoke('REMOVE', id)
   if (result) {
     ElMessage({
-      message: 'Remove success!',
+      message: text.value.removalSucceeded,
       type: 'error'
     })
     getSaves()
   } else {
     ElMessage({
-      message: 'Remove failed, please try later',
+      message: text.value.removalFailed,
       type: 'error'
     })
   }
@@ -204,6 +217,7 @@ async function removeSave(id: string) {
 <style>
 body {
   font-size: var(--font-size);
+  user-select: none;
 }
 ul {
   margin: 0;
@@ -221,6 +235,10 @@ ul {
   max-width: 90%;
   margin: 0 auto;
   padding: 1em;
+}
+svg {
+  width: 1.5em;
+  height: 1.5em;
 }
 .list {
   margin-top: 1em;
@@ -252,6 +270,7 @@ ul {
     }
     .name {
       font-weight: bold;
+      user-select: text;
     }
     .description {
       color: #666;

@@ -41,7 +41,7 @@ function createWindow() {
     win.loadURL(url)
   }
 
-  registerIpc()
+  registerIpc(win)
   setMenu(win)
 }
 
