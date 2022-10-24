@@ -79,14 +79,12 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, FormInstance } from 'element-plus'
 import IconChinese from './components/IconChinese.vue'
 import IconEnglish from './components/IconEnglish.vue'
-import { to } from './utils'
+import { to } from './utils/save'
 import en from './i18n/en'
 import zh from './i18n/zh'
 import { Save, BackupData } from '../electron/saves'
 import 'element-plus/es/components/message/style/css'
 import 'element-plus/es/components/message-box/style/css'
-
-const { rendererInvoke } = window.electron
 
 const lang = ref<'en' | 'zh'>('en')
 const text = computed(() => (lang.value === 'en' ? en : zh))
@@ -113,7 +111,6 @@ onMounted(() => {
 
 function changeLanguage() {
   lang.value = lang.value === 'en' ? 'zh' : 'en'
-  rendererInvoke('CHANGE_LANGUAGE', lang.value)
 }
 
 function closeBackupModal() {
@@ -149,68 +146,66 @@ async function quickBackup() {
 }
 
 async function backup(data: BackupData) {
-  const [reason, save] = await rendererInvoke<[false, Save] | [string]>('BACKUP', data)
-  if (reason) {
-    ElMessage.error(text.value.backupFailed)
-    return false
-  }
-
-  ElMessage.success(text.value.backupSucceeded)
-  saves.value.push(save)
-  closeBackupModal()
+  // const [reason, save] = await rendererInvoke<[false, Save] | [string]>('BACKUP', data)
+  // if (reason) {
+  //   ElMessage.error(text.value.backupFailed)
+  //   return false
+  // }
+  // ElMessage.success(text.value.backupSucceeded)
+  // saves.value.push(save)
+  // closeBackupModal()
 }
 
 async function getSaves() {
-  const [failed, data] = await rendererInvoke<[false, Save[]] | [true]>('GET_SAVE_LIST')
-  if (failed) {
-    ElMessage.error(text.value.gettingSavesFailed)
-    return
-  }
-
-  saves.value = data
+  // const [failed, data] = await rendererInvoke<[false, Save[]] | [true]>('GET_SAVE_LIST')
+  // if (failed) {
+  //   ElMessage.error(text.value.gettingSavesFailed)
+  //   return
+  // }
+  // saves.value = data
 }
 
 async function loadSave(id: string) {
-  const [err] = await to(
-    ElMessageBox.confirm(text.value.loadMessage, {
-      title: text.value.load,
-      type: 'warning',
-      confirmButtonText: text.value.okText,
-      cancelButtonText: text.value.cancelText
-    })
-  )
-  if (err) return
-  const result = await rendererInvoke<boolean>('LOAD', id)
-  ElMessage({
-    message: text.value[result ? 'loadingSucceeded' : 'loadingFailed'],
-    type: result ? 'success' : 'error'
-  })
+  // const [err] = await to(
+  //   ElMessageBox.confirm(text.value.loadMessage, {
+  //     title: text.value.load,
+  //     type: 'warning',
+  //     confirmButtonText: text.value.okText,
+  //     cancelButtonText: text.value.cancelText
+  //   })
+  // )
+  // if (err) return
+  // const result = await rendererInvoke<boolean>('LOAD', id)
+  // ElMessage({
+  //   message: text.value[result ? 'loadingSucceeded' : 'loadingFailed'],
+  //   type: result ? 'success' : 'error'
+  // })
 }
 
 async function removeSave(id: string) {
-  const [err] = await to(
-    ElMessageBox.confirm(text.value.removeMessage, {
-      title: text.value.remove,
-      type: 'warning',
-      confirmButtonClass: 'el-button--danger',
-      confirmButtonText: text.value.okText,
-      cancelButtonText: text.value.cancelText
-    })
-  )
-  if (err) return
-  const result = await rendererInvoke('REMOVE', id)
-  if (result) {
-    ElMessage({
-      message: text.value.removalSucceeded,
-      type: 'error'
-    })
-    getSaves()
-  } else {
-    ElMessage({
-      message: text.value.removalFailed,
-      type: 'error'
-    })
-  }
+  // const [err] = await to(
+  //   ElMessageBox.confirm(text.value.removeMessage, {
+  //     title: text.value.remove,
+  //     type: 'warning',
+  //     confirmButtonClass: 'el-button--danger',
+  //     confirmButtonText: text.value.okText,
+  //     cancelButtonText: text.value.cancelText
+  //   })
+  // )
+  // if (err) return
+  // const result = await rendererInvoke('REMOVE', id)
+  // if (result) {
+  //   ElMessage({
+  //     message: text.value.removalSucceeded,
+  //     type: 'error'
+  //   })
+  //   getSaves()
+  // } else {
+  //   ElMessage({
+  //     message: text.value.removalFailed,
+  //     type: 'error'
+  //   })
+  // }
 }
 </script>
 
