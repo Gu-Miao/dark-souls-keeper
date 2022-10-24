@@ -1,6 +1,5 @@
 node_modules
 dist
 release
-vite-plugin-electron.log
 auto-imports.d.ts
 components.d.ts
