@@ -1,3 +1,6 @@
+import en from './en'
+import zh from './zh'
+
 type Keys =
   | 'gettingSavesFailed'
   | 'backUp'
@@ -27,3 +30,9 @@ type Keys =
   | 'empty'
 
 export type Text = Record<Keys, string>
+
+export type Lang = 'zh' | 'en'
+
+export function getText(lang: Lang): Text {
+  return lang === 'en' ? en : zh
+}

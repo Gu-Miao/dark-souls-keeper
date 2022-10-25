@@ -1,4 +1,4 @@
-import { Text } from './type'
+import { Text } from '.'
 
 const zh: Text = {
   gettingSavesFailed: '获取存档失败，请稍后再试',

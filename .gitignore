@@ -1,5 +1,5 @@
 node_modules
 dist
-release
 auto-imports.d.ts
 components.d.ts
+/app-icon.png

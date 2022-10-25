@@ -1,0 +1,12 @@
+diff --git a/fs.d.ts b/fs.d.ts
+index 7b81209753f1470d41b3eafe6dc67fac7b804643..e061136d4eddc8a93bff003c7117cf0d44dee985 100644
+--- a/fs.d.ts
++++ b/fs.d.ts
+@@ -257,6 +257,6 @@ declare function renameFile(oldPath: string, newPath: string, options?: FsOption
+  *
+  * @since 1.1.0
+  */
+-declare function exists(path: string, options?: FsOptions): Promise<void>;
++declare function exists(path: string, options?: FsOptions): Promise<boolean>;
+ export type { FsOptions, FsDirOptions, FsTextFileOption, BinaryFileContents, FsBinaryFileOption, FileEntry };
+ export { BaseDirectory as Dir, readTextFile, readBinaryFile, writeTextFile, writeTextFile as writeFile, writeBinaryFile, readDir, createDir, removeDir, copyFile, removeFile, renameFile, exists };

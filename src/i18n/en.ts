@@ -1,4 +1,4 @@
-import { Text } from './type'
+import { Text } from '.'
 
 const en = <Text>{
   gettingSavesFailed: 'Getting saves failed, please try later',

@@ -22,7 +22,7 @@
 
           <!-- Action buttons -->
           <div class="actions">
-            <el-button type="primary" @click="loadSave(save.id)">{{ text.load }}</el-button>
+            <el-button type="primary" @click="loadSave(save)">{{ text.load }}</el-button>
             <el-button type="danger" @click="removeSave(save.id)">{{ text.remove }}</el-button>
           </div>
         </header>
@@ -36,7 +36,7 @@
     </ul>
   </div>
 
-  <!-- Backup dialog -->
+  <!-- handleBackingUp dialog -->
   <el-dialog
     v-model="showBackup"
     :title="text.backUp"
@@ -79,15 +79,14 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, FormInstance } from 'element-plus'
 import IconChinese from './components/IconChinese.vue'
 import IconEnglish from './components/IconEnglish.vue'
-import { to } from './utils/save'
-import en from './i18n/en'
-import zh from './i18n/zh'
-import { Save, BackupData } from '../electron/saves'
+import { to } from './utils'
+import { SaveManager, Save, BackupData } from './utils/SaveManager'
+import { getText, Lang } from './i18n'
 import 'element-plus/es/components/message/style/css'
 import 'element-plus/es/components/message-box/style/css'
 
-const lang = ref<'en' | 'zh'>('en')
-const text = computed(() => (lang.value === 'en' ? en : zh))
+const lang = ref<Lang>('en')
+const text = computed(() => getText(lang.value))
 
 const search = ref<string>('')
 const saves = ref<Save[]>([])
@@ -115,7 +114,7 @@ function changeLanguage() {
 
 function closeBackupModal() {
   showBackup.value = false
-  formRef.value.resetFields()
+  formRef.value?.resetFields()
 }
 
 function nameValidator(_, value: string | undefined, cb: Function) {
@@ -129,7 +128,7 @@ async function submitBackup() {
   const form = formRef.value
   if (!form) return
   if (!(await form.validate())) return
-  backup({ ...backupFormState })
+  handleBackingUp({ ...backupFormState })
 }
 
 async function quickBackup() {
@@ -142,70 +141,70 @@ async function quickBackup() {
     })
   )
   if (err) return
-  backup({})
+  handleBackingUp({})
 }
 
-async function backup(data: BackupData) {
-  // const [reason, save] = await rendererInvoke<[false, Save] | [string]>('BACKUP', data)
-  // if (reason) {
-  //   ElMessage.error(text.value.backupFailed)
-  //   return false
-  // }
-  // ElMessage.success(text.value.backupSucceeded)
-  // saves.value.push(save)
-  // closeBackupModal()
+async function handleBackingUp(data: BackupData) {
+  const [err, save] = await to(SaveManager.backup(saves.value, data))
+  if (err) {
+    ElMessage.error(text.value.backupFailed)
+    return false
+  }
+  ElMessage.success(text.value.backupSucceeded)
+  saves.value.push(save)
+  closeBackupModal()
 }
 
 async function getSaves() {
-  // const [failed, data] = await rendererInvoke<[false, Save[]] | [true]>('GET_SAVE_LIST')
-  // if (failed) {
-  //   ElMessage.error(text.value.gettingSavesFailed)
-  //   return
-  // }
-  // saves.value = data
+  const [err, data] = await to(SaveManager.getAll())
+  if (err) {
+    ElMessage.error(text.value.gettingSavesFailed)
+    return
+  }
+  saves.value = data
 }
 
-async function loadSave(id: string) {
-  // const [err] = await to(
-  //   ElMessageBox.confirm(text.value.loadMessage, {
-  //     title: text.value.load,
-  //     type: 'warning',
-  //     confirmButtonText: text.value.okText,
-  //     cancelButtonText: text.value.cancelText
-  //   })
-  // )
-  // if (err) return
-  // const result = await rendererInvoke<boolean>('LOAD', id)
-  // ElMessage({
-  //   message: text.value[result ? 'loadingSucceeded' : 'loadingFailed'],
-  //   type: result ? 'success' : 'error'
-  // })
+async function loadSave(save: Save) {
+  const [canceled] = await to(
+    ElMessageBox.confirm(text.value.loadMessage, {
+      title: text.value.load,
+      type: 'warning',
+      confirmButtonText: text.value.okText,
+      cancelButtonText: text.value.cancelText
+    })
+  )
+  if (canceled) return
+  const [err] = await to(SaveManager.load(save))
+  ElMessage({
+    message: text.value[err ? 'loadingFailed' : 'loadingSucceeded'],
+    type: err ? 'error' : 'success'
+  })
 }
 
 async function removeSave(id: string) {
-  // const [err] = await to(
-  //   ElMessageBox.confirm(text.value.removeMessage, {
-  //     title: text.value.remove,
-  //     type: 'warning',
-  //     confirmButtonClass: 'el-button--danger',
-  //     confirmButtonText: text.value.okText,
-  //     cancelButtonText: text.value.cancelText
-  //   })
-  // )
-  // if (err) return
-  // const result = await rendererInvoke('REMOVE', id)
-  // if (result) {
-  //   ElMessage({
-  //     message: text.value.removalSucceeded,
-  //     type: 'error'
-  //   })
-  //   getSaves()
-  // } else {
-  //   ElMessage({
-  //     message: text.value.removalFailed,
-  //     type: 'error'
-  //   })
-  // }
+  const [canceled] = await to(
+    ElMessageBox.confirm(text.value.removeMessage, {
+      title: text.value.remove,
+      type: 'warning',
+      confirmButtonClass: 'el-button--danger',
+      confirmButtonText: text.value.okText,
+      cancelButtonText: text.value.cancelText
+    })
+  )
+  if (canceled) return
+  const [err, nextSaves] = await to(SaveManager.remove(saves.value, id))
+  if (err) {
+    ElMessage({
+      message: text.value.removalFailed,
+      type: 'error'
+    })
+  } else {
+    ElMessage({
+      message: text.value.removalSucceeded,
+      type: 'success'
+    })
+    saves.value = nextSaves
+  }
 }
 </script>
 
