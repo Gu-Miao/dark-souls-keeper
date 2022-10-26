@@ -7,6 +7,8 @@ An archive manager for Dark Souls III.
 ![DarkSouls](https://img.shields.io/badge/topic-darksouls-red?style=flat)
 ![GitHub](https://img.shields.io/github/license/Gu-Miao/dark-souls-keeper)
 
+[简体中文 README](./README_zh.md)
+
 ## Install
 
 Go [releases page](https://github.com/Gu-Miao/dark-souls-keeper/releases).

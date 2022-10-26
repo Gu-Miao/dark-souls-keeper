@@ -7,6 +7,8 @@
 ![DarkSouls](https://img.shields.io/badge/topic-darksouls-red?style=flat)
 ![GitHub](https://img.shields.io/github/license/Gu-Miao/dark-souls-keeper)
 
+[English README](./README.md)
+
 ## 安装
 
 请访问 [releases 页面](https://github.com/Gu-Miao/dark-souls-keeper/releases).
