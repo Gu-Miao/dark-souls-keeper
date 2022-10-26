@@ -23,7 +23,7 @@
 
       <!-- Backups -->
       <template v-else>
-        <li v-for="backup in filteredBackups">
+        <li v-for="backup in filteredBackups" :key="backup.id">
           <header>
             <!-- Name of backup -->
             <div class="name">{{ backup.name }}</div>
