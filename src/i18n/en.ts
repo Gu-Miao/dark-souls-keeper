@@ -27,7 +27,14 @@ const en: Text = {
   removeMessage: 'Remove this backup (irreversible)',
   removalSucceeded: 'Removal succeeded',
   removalFailed: 'Removal failed, please try later',
-  empty: 'No backup found'
+  empty: 'No backup found',
+  settings: 'Settings',
+  fontSizeLabel: 'Font size (12 ~ 24)',
+  themeLabel: 'Theme',
+  light: 'Light',
+  dark: 'Dark',
+  followSystem: 'Follow system',
+  close: 'Close'
 }
 
 export default en

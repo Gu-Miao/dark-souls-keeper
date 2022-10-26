@@ -27,7 +27,14 @@ const zh: Text = {
   removeMessage: '删除此备份（不可逆）',
   removalSucceeded: '删除成功',
   removalFailed: '删除失败，请稍后再试',
-  empty: '无备份'
+  empty: '无备份',
+  settings: '设置',
+  fontSizeLabel: '字体大小（12 ~ 24）',
+  themeLabel: '主题',
+  light: '明亮',
+  dark: '黑暗',
+  followSystem: '跟随系统',
+  close: '关闭'
 }
 
 export default zh

@@ -29,6 +29,13 @@ type Keys =
   | 'removalSucceeded'
   | 'removalFailed'
   | 'empty'
+  | 'settings'
+  | 'fontSizeLabel'
+  | 'themeLabel'
+  | 'light'
+  | 'dark'
+  | 'followSystem'
+  | 'close'
 
 export type Text = Record<Keys, string>
 

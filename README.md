@@ -21,10 +21,10 @@ Go [releases page](https://github.com/Gu-Miao/dark-souls-keeper/releases).
 - Remove backup
 - Search and filter backup by name
 - Support English and Chinese
+- Support font size setting and theme switching
 
 ## Next
 
-- Setthings like font size, background color and persistence
 - Support DS1, DS2, Sekiro and EldenRing
 - Support secondary directories to classify backups
 - Parse archives and show information of them
