@@ -7,7 +7,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "dark-souls-keeper",
+    "productName": "Dark Souls Keeper",
     "version": "0.1.0"
   },
   "tauri": {
@@ -58,7 +58,6 @@
     "windows": [
       {
         "title": "Dark Souls Keeper",
-
         "minWidth": 800,
         "minHeight": 640,
         "resizable": true,
