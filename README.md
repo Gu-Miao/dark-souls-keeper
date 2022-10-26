@@ -1,6 +1,6 @@
 # Dark Souls Keeper
 
-A save manager for Dark Souls III.
+A archive manager for Dark Souls III.
 
 ![GitHub package.json version](https://img.shields.io/github/package-json/v/Gu-Miao/dark-souls-keeper?style=flat)
 ![TypesScript](https://img.shields.io/badge/lang-typescript-blue?style=flat)
@@ -13,8 +13,8 @@ Go [releases page](https://github.com/Gu-Miao/dark-souls-keeper/releases).
 
 ## Support
 
-- Back up current save with name and description.
-- Quick back up current save with a time string as its name.
+- Back up current archive with name and description.
+- Quick back up current archive with a time string as its name.
 - Load backup to overwrite current archive
 - Remove backup
 - Search and filter backup by name

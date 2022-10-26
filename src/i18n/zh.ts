@@ -1,11 +1,12 @@
 import { Text } from '.'
 
 const zh: Text = {
-  gettingSavesFailed: '获取存档失败，请稍后再试',
+  gettingBackupsFailed: '获取存档失败，请稍后再试',
   backUp: '备份',
   nameLabel: '存档名称',
   namePlaceholder: '存档名称……',
   nameErrorMessageEmpty: '存档名称是必填项',
+  nameErrorMessageDuplicate: '存档名称已存在',
   nameErrorMessageLength: '存档名称的长度应在 3 到 36 之间',
   nameErrorMessageIllegal: '存档名称中不能包含 \\ / : * ? " < > | 这些符号',
   descriptionLabel: '描述',

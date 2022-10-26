@@ -2,11 +2,12 @@ import en from './en'
 import zh from './zh'
 
 type Keys =
-  | 'gettingSavesFailed'
+  | 'gettingBackupsFailed'
   | 'backUp'
   | 'nameLabel'
   | 'namePlaceholder'
   | 'nameErrorMessageEmpty'
+  | 'nameErrorMessageDuplicate'
   | 'nameErrorMessageLength'
   | 'nameErrorMessageIllegal'
   | 'descriptionLabel'
@@ -33,6 +34,29 @@ export type Text = Record<Keys, string>
 
 export type Lang = 'zh' | 'en'
 
-export function getText(lang: Lang): Text {
-  return lang === 'en' ? en : zh
+/**
+ * Class of i18n text
+ */
+export class I18n {
+  /** Current language */
+  lang: Lang
+  /** Text content of current language */
+  text: Text
+
+  /**
+   * Constructor of I18n class
+   * @param lang Language
+   */
+  constructor(lang: Lang) {
+    this.setLanguage(lang)
+  }
+
+  /**
+   * Set current language and corresponding text content
+   * @param lang Language
+   */
+  setLanguage(lang: Lang) {
+    this.lang = lang
+    this.text = lang === 'en' ? en : zh
+  }
 }
