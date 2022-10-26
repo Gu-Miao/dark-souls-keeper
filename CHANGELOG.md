@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 1.3.0
+
+2022-10-26
+
+- Reconstructed the program with tauri
+
+---
+
+- 使用 tauri 对程序进行了重构
+
 ## 1.2.0
 
 2022-10-20

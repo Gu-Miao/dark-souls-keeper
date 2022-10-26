@@ -1,6 +1,6 @@
 # Dark Souls Keeper
 
-A archive manager for Dark Souls III.
+An archive manager for Dark Souls III.
 
 ![GitHub package.json version](https://img.shields.io/github/package-json/v/Gu-Miao/dark-souls-keeper?style=flat)
 ![TypesScript](https://img.shields.io/badge/lang-typescript-blue?style=flat)
@@ -26,7 +26,7 @@ Go [releases page](https://github.com/Gu-Miao/dark-souls-keeper/releases).
 - Support DS1, DS2, Sekiro and EldenRing
 - Support secondary directories to classify backups
 - Parse archives and show information of them
-- Replace electron with tauri to reduce package volume and memory consumption
+- Support import, export
 
 ## LICENSE
 
