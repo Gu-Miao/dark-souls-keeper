@@ -124,7 +124,7 @@ import 'element-plus/theme-chalk/dark/css-vars.css'
 import 'element-plus/es/components/message/style/css'
 import 'element-plus/es/components/message-box/style/css'
 
-const i18n = reactive(new I18n('en'))
+const i18n = reactive(new I18n((await forage.getItem('lang')) || 'en'))
 
 const search = ref<string>('')
 const manager = reactive(new ArchiveManager())
@@ -162,6 +162,10 @@ watchEffect(() => {
 
   forage.setItem('theme', settingsFormState.theme)
   forage.setItem('fontSize', settingsFormState.fontSize)
+})
+
+watchEffect(() => {
+  forage.setItem('lang', i18n.lang)
 })
 
 onMounted(getBackups)
