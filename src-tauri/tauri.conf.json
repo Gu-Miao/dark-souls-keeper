@@ -41,8 +41,8 @@
         "icons/icon.ico"
       ],
       "identifier": "com.tauri.dark-souls-keeper",
-      "longDescription": "A archive manager for Dark Souls III",
-      "shortDescription": "A archive manager for Dark Souls III",
+      "longDescription": "An archive manager for Dark Souls III",
+      "shortDescription": "An archive manager for Dark Souls III",
       "targets": "msi",
       "windows": {
         "certificateThumbprint": null,
