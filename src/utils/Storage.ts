@@ -1,10 +1,11 @@
 import { fs, path } from '@tauri-apps/api'
 import { v4 as uuid } from 'uuid'
 import dayjs from 'dayjs'
+import forage from './forage'
+import { Lang } from '../i18n'
 
 const dataDir = await path.dataDir()
 const keeperDir = await path.join(dataDir, 'DarkSoulsKeeper')
-const backupJson = await path.join(keeperDir, 'backups.json')
 
 export type Backup = {
   id: string
@@ -20,18 +21,46 @@ export type BackupData = {
   description?: string
 }
 
-/**
- * Archive manager
- */
-export class ArchiveManager {
-  /** Current backups of archive manager  */
-  backups: Backup[]
+export type Theme = 'light' | 'dark' | 'system'
 
-  /**
-   * Constructor of archive manager
-   */
-  constructor() {
-    this.backups = []
+export type Store = {
+  backups: Backup[]
+  fontSize: number
+  theme: Theme
+  lang: Lang
+}
+
+const defaultStore: Store = {
+  backups: [],
+  fontSize: 16,
+  theme: 'system',
+  lang: 'en'
+}
+
+/** Store manager */
+export class Storage {
+  backups: Backup[]
+  fontSize: number
+  theme: Theme
+  lang: Lang
+
+  /** Constructor of archive manager */
+  constructor() {}
+
+  /** Create instance of Storage */
+  static async create() {
+    const storage = new Storage()
+
+    await storage.getStore()
+    return storage
+  }
+
+  /** Get all the data and store in current instance */
+  async getStore() {
+    this.backups = (await forage.getItem('backups')) || defaultStore.backups
+    this.fontSize = (await forage.getItem('fontSize')) || defaultStore.fontSize
+    this.theme = (await forage.getItem('theme')) || defaultStore.theme
+    this.lang = (await forage.getItem('lang')) || defaultStore.lang
   }
 
   /**
@@ -41,30 +70,6 @@ export class ArchiveManager {
    */
   getArchiveDir(type: Backup['type']) {
     return path.join(dataDir, type)
-  }
-
-  /**
-   * Initialize if necessary. It will create a `DarkSoulsKeeper` directory
-   * in `$DATA` directory and create a `backups.json` file to store data of
-   * backups when calling this function
-   */
-  async initializeIfNecessary() {
-    createDirIfNecessary(keeperDir)
-
-    const isBackupJsonExisted = await fs.exists(backupJson)
-    if (isBackupJsonExisted) return
-
-    await fs.writeTextFile(backupJson, '[]')
-  }
-
-  /**
-   * Get all the backups and store in current instance
-   */
-  async getBackups() {
-    await this.initializeIfNecessary()
-
-    const backupJsonContent = await fs.readTextFile(backupJson)
-    this.backups = JSON.parse(backupJsonContent)
   }
 
   /**
@@ -85,7 +90,7 @@ export class ArchiveManager {
     await copyDir(archiveDir, destination)
 
     const nextBackups = [...this.backups, backup]
-    await fs.writeTextFile(backupJson, JSON.stringify(nextBackups))
+    await this.setItem('backups', nextBackups)
 
     this.backups = nextBackups
   }
@@ -113,9 +118,18 @@ export class ArchiveManager {
     nextBackups.splice(index, 1)
 
     await removeDir(dir)
-    await fs.writeTextFile(backupJson, JSON.stringify(nextBackups))
+    await this.setItem('backups', nextBackups)
 
     this.backups = nextBackups
+  }
+
+  /**
+   * Set data of item in store
+   * @param key Key of data
+   * @param value Value of data
+   */
+  async setItem<T extends keyof Store>(key: T, value: Store[T]) {
+    await forage.setItem(key, value)
   }
 }
 
