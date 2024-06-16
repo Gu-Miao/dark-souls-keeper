@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 1.4.0
+
+- Add support of Elden Ring
+
+---
+
+- 添加了对艾尔登法环的支持
+
 ## 1.3.0
 
 2022-10-26
