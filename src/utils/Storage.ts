@@ -7,17 +7,19 @@ import { Lang } from '../i18n'
 const dataDir = await path.dataDir()
 const keeperDir = await path.join(dataDir, 'DarkSoulsKeeper')
 
+export type BackupType = 'DarkSoulsIII' | 'EldenRing'
+
 export type Backup = {
   id: string
   name: string
-  type: 'DarkSouls' | 'DarkSoulsII' | 'DarkSoulsIII' | 'Sekiro' | 'EldenRing'
+  type: BackupType
   description: string
   createdAt: string
 }
 
 export type BackupData = {
   name?: string
-  type: Backup['type']
+  type?: BackupType
   description?: string
 }
 
@@ -68,7 +70,7 @@ export class Storage {
    * @param type Type of archive
    * @returns
    */
-  getArchiveDir(type: Backup['type']) {
+  getArchiveDir(type: BackupType) {
     return path.join(dataDir, type)
   }
 

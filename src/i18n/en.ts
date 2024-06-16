@@ -1,6 +1,9 @@
 import { Text } from '.'
 
 const en: Text = {
+  gameNamePlaceholder: 'All',
+  DarkSoulsIII: 'Dark Souls III',
+  EldenRing: 'Elden Ring',
   gettingBackupsFailed: 'Getting backups failed, please try later',
   backUp: 'Back up',
   nameLabel: 'Backup name',
@@ -9,6 +12,9 @@ const en: Text = {
   nameErrorMessageDuplicate: 'Name of backup already exists',
   nameErrorMessageLength: 'The length of the name should be between 3 and 36',
   nameErrorMessageIllegal: 'Backup name can not include \\ / : * ? " < > |',
+  backupTypeLabel: 'Game',
+  backupTypeRequiredMessage: 'Game is required',
+  backupTypePlaceholder: 'Please select game',
   descriptionLabel: 'Description',
   descriptionPlaceholder: 'Some description...',
   submitText: 'Submit',

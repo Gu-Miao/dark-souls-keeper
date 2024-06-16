@@ -1,4 +1,7 @@
 type Keys =
+  | 'gameNamePlaceholder'
+  | 'DarkSoulsIII'
+  | 'EldenRing'
   | 'gettingBackupsFailed'
   | 'backUp'
   | 'nameLabel'
@@ -7,6 +10,9 @@ type Keys =
   | 'nameErrorMessageDuplicate'
   | 'nameErrorMessageLength'
   | 'nameErrorMessageIllegal'
+  | 'backupTypeLabel'
+  | 'backupTypeRequiredMessage'
+  | 'backupTypePlaceholder'
   | 'descriptionLabel'
   | 'descriptionPlaceholder'
   | 'submitText'

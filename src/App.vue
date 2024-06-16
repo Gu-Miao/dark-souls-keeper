@@ -2,15 +2,33 @@
   <div class="container">
     <!-- Header buttons -->
     <header class="header">
-      <el-button type="primary" @click="quickBackUp">{{ text.quickBackUp }}</el-button>
-      <el-button type="primary" @click="showBackUp = true">{{ text.backUp }}</el-button>
-      <el-button class="icon-btn language" @click="changeLanguage">
-        <icon-english v-if="store.lang === 'en'" />
-        <icon-chinese v-else />
-      </el-button>
-      <el-button class="icon-btn settings" @click="showSettings = true">
-        <icon-settings />
-      </el-button>
+      <el-select
+        v-model="currentGame"
+        class="game-select"
+        :size="store.fontSize > 18 ? 'large' : store.fontSize > 14 ? 'default' : 'small'"
+        :placeholder="text.gameNamePlaceholder"
+        clearable
+      >
+        <el-option
+          v-for="gameName in gameNames"
+          :key="gameName"
+          :label="text[gameName]"
+          :value="gameName"
+        />
+      </el-select>
+      <div>
+        <el-button type="primary" @click="quickBackUp" :disabled="!currentGame">
+          {{ text.quickBackUp }}
+        </el-button>
+        <el-button type="primary" @click="showBackUp = true">{{ text.backUp }}</el-button>
+        <el-button class="icon-btn language" @click="changeLanguage">
+          <icon-english v-if="store.lang === 'en'" />
+          <icon-chinese v-else />
+        </el-button>
+        <el-button class="icon-btn settings" @click="showSettings = true">
+          <icon-settings />
+        </el-button>
+      </div>
     </header>
 
     <!-- Search -->
@@ -26,7 +44,7 @@
         <li v-for="backup in filteredBackups" :key="backup.id">
           <header>
             <!-- Name of backup -->
-            <div class="name">{{ backup.name }}</div>
+            <b class="name">{{ backup.name }}</b>
 
             <!-- Action buttons -->
             <div class="actions">
@@ -36,6 +54,11 @@
               }}</el-button>
             </div>
           </header>
+
+          <!-- Type of backup -->
+          <div>
+            <span class="type">{{ text[backup.type] }}</span>
+          </div>
 
           <!-- Description of backup -->
           <div class="description">{{ backup.description }}</div>
@@ -67,6 +90,26 @@
         :rules="[{ required: true, validator: nameValidator }]"
       >
         <el-input v-model="backupFormState.name" :placeholder="text.namePlaceholder" />
+      </el-form-item>
+
+      <!-- Game -->
+      <el-form-item
+        :label="text.backupTypeLabel"
+        prop="type"
+        :rules="[{ required: true, message: text.backupTypeRequiredMessage }]"
+      >
+        <el-select
+          v-model="backupFormState.type"
+          :placeholder="text.backupTypePlaceholder"
+          clearable
+        >
+          <el-option
+            v-for="gameName in gameNames"
+            :key="gameName"
+            :label="text[gameName]"
+            :value="gameName"
+          />
+        </el-select>
       </el-form-item>
 
       <!-- Description -->
@@ -117,7 +160,7 @@ import IconChinese from './components/IconChinese.vue'
 import IconEnglish from './components/IconEnglish.vue'
 import IconSettings from './components/IconSettings.vue'
 import { to } from './utils'
-import { Storage, Store, Backup, BackupData } from './utils/Storage'
+import { BackupType, Storage, Store, Backup, BackupData } from './utils/Storage'
 import { en, zh } from './i18n'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 import 'element-plus/es/components/message/style/css'
@@ -131,20 +174,24 @@ const store = reactive<Store>({
   lang: storage.lang
 })
 
+const gameNames: BackupType[] = ['DarkSoulsIII', 'EldenRing']
+const currentGame = ref<BackupType>()
+
 const search = ref('')
 const filteredBackups = computed(() =>
-  store.backups.filter(backup =>
-    backup.name.toLowerCase().includes(search.value.trim().toLocaleLowerCase())
-  )
+  store.backups.filter(backup => {
+    const matchSearch = backup.name.toLowerCase().includes(search.value.trim().toLocaleLowerCase())
+    const matchType = currentGame.value ? backup.type === currentGame.value : true
+
+    return matchSearch && matchType
+  })
 )
 
 const text = computed(() => (store.lang === 'en' ? en : zh))
 
 const showBackUp = ref(false)
 const backupFormRef = ref<FormInstance>()
-const backupFormState = reactive<BackupData>({
-  type: 'DarkSoulsIII'
-})
+const backupFormState = reactive<BackupData>({})
 
 const showSettings = ref<boolean>(false)
 watchEffect(() => {
@@ -214,7 +261,7 @@ async function quickBackUp() {
     })
   )
   if (canceled) return
-  backUp({ type: 'DarkSoulsIII' })
+  backUp({ type: currentGame.value })
 }
 
 /**
@@ -323,6 +370,12 @@ ul {
 <style lang="less" scoped>
 .header {
   margin-bottom: 1em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.game-select {
+  width: 11em;
 }
 .container {
   width: 50em;
@@ -352,10 +405,10 @@ ul {
     padding: 0.8em 1em;
     display: flex;
     flex-direction: column;
-    gap: 0.2em;
     border: 1px solid #ccc;
     border-radius: 0.4em;
     transition: border-color 0.2s linear, box-shadow 0.2s ease-in-out;
+
     &:hover {
       border-color: #32abf1;
       box-shadow: 0 0 0.2em #08c;
@@ -367,18 +420,29 @@ ul {
     header {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       gap: 0.6em;
     }
     .actions {
       flex-shrink: 0;
     }
     .name {
+      font-size: 1.2em;
       font-weight: bold;
       user-select: text;
+      margin-right: 0.5em;
+    }
+    .type {
+      font-size: 0.65em;
+      padding: 0.4em 0.8em;
+      color: white;
+      background-color: var(--el-color-primary);
+      border-radius: 0.4em;
     }
     .description {
       color: #666;
       font-size: 0.8em;
+      margin-top: 1em;
     }
   }
 }

@@ -1,6 +1,9 @@
 import { Text } from '.'
 
 const zh: Text = {
+  gameNamePlaceholder: '全部',
+  DarkSoulsIII: '黑暗之魂3',
+  EldenRing: '艾尔登法环',
   gettingBackupsFailed: '获取存档失败，请稍后再试',
   backUp: '备份',
   nameLabel: '存档名称',
@@ -9,6 +12,9 @@ const zh: Text = {
   nameErrorMessageDuplicate: '存档名称已存在',
   nameErrorMessageLength: '存档名称的长度应在 3 到 36 之间',
   nameErrorMessageIllegal: '存档名称中不能包含 \\ / : * ? " < > | 这些符号',
+  backupTypeLabel: '游戏',
+  backupTypeRequiredMessage: '游戏是必选项',
+  backupTypePlaceholder: '请选择游戏',
   descriptionLabel: '描述',
   descriptionPlaceholder: '一些描述信息……',
   submitText: '提交',
