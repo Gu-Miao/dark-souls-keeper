@@ -2,6 +2,8 @@
 
 ## 1.4.0
 
+2024-06-17
+
 - Add support of Elden Ring
 
 ---
