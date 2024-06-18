@@ -1,11 +1,12 @@
 import { fs, path } from '@tauri-apps/api'
 import { v4 as uuid } from 'uuid'
 import dayjs from 'dayjs'
-import forage from './forage'
 import { Lang } from '../i18n'
 
+const jsonName = 'keeper.json'
 const dataDir = await path.dataDir()
 const keeperDir = await path.join(dataDir, 'DarkSoulsKeeper')
+const keeperJsonPath = await path.join(keeperDir, jsonName)
 
 export type BackupType = 'DarkSoulsIII' | 'EldenRing'
 
@@ -14,7 +15,7 @@ export type Backup = {
   name: string
   type: BackupType
   description: string
-  createdAt: string
+  lastUpdate: string
 }
 
 export type BackupData = {
@@ -41,10 +42,7 @@ const defaultStore: Store = {
 
 /** Store manager */
 export class Storage {
-  backups: Backup[]
-  fontSize: number
-  theme: Theme
-  lang: Lang
+  store: Store
 
   /** Constructor of archive manager */
   constructor() {}
@@ -52,17 +50,55 @@ export class Storage {
   /** Create instance of Storage */
   static async create() {
     const storage = new Storage()
+    await storage.init()
 
-    await storage.getStore()
     return storage
   }
 
   /** Get all the data and store in current instance */
+  async init() {
+    try {
+      this.store = await this.getStore()
+    } catch {
+      const backups = await this.scanArchives()
+      this.store = { ...defaultStore, backups }
+      this.updateStore()
+    }
+  }
+
+  /** Get store */
   async getStore() {
-    this.backups = (await forage.getItem('backups')) || defaultStore.backups
-    this.fontSize = (await forage.getItem('fontSize')) || defaultStore.fontSize
-    this.theme = (await forage.getItem('theme')) || defaultStore.theme
-    this.lang = (await forage.getItem('lang')) || defaultStore.lang
+    const json = await fs.readTextFile(keeperJsonPath)
+
+    return JSON.parse(json)
+  }
+
+  /** Update store */
+  async updateStore() {
+    return fs.writeTextFile(keeperJsonPath, JSON.stringify(this.store))
+  }
+
+  /** Scan archives */
+  async scanArchives() {
+    const entires = await fs.readDir(keeperDir)
+    const backups = []
+
+    for (const entry of entires) {
+      if (!entry.children) continue
+
+      const childEntries = await fs.readDir(entry.path)
+      const hasKeeperJson = childEntries.find(child => child.name === jsonName)
+      if (!hasKeeperJson) continue
+
+      const jsonPath = await path.join(keeperDir, entry.name, jsonName)
+      const json = await fs.readTextFile(jsonPath)
+
+      try {
+        backups.push(JSON.parse(json))
+      } catch {}
+    }
+
+    return backups
   }
 
   /**
@@ -75,26 +111,39 @@ export class Storage {
   }
 
   /**
+   * Get name of backup directory
+   * @param backup Backup to use
+   * @returns
+   */
+  getBackupDir(backup: Backup) {
+    const { id, name, type } = backup
+    return `${type}-${name}-${id}`
+  }
+
+  /**
    * Back up an archive
    * @param data Current archived data and its naming and description by users
    */
   async backUp(data: BackupData) {
     const id = uuid()
     const now = dayjs()
-    const createdAt = now.format('YYYY-MM-DD HH:mm:ss')
-    const name = data.name || `Quick backup ${now.format('YYYY-MM-DD HHmmss')}`
-    const description = data.description || `Created at ${createdAt}`
+    const lastUpdate = now.format('YYYY-MM-DD HH:mm:ss')
+    const name = data.name || 'quickBackup'
+    const description = data.description || `Created at ${lastUpdate}`
     const type = data.type
-    const backup: Backup = { id, name, description, createdAt, type }
+    const backup: Backup = { id, name, description, lastUpdate, type }
 
+    const backupDir = this.getBackupDir(backup)
     const archiveDir = await this.getArchiveDir(data.type)
-    const destination = await path.join(keeperDir, name)
+    const destination = await path.join(keeperDir, backupDir)
+    const keeperJsonPath = await path.join(destination, jsonName)
+
     await copyDir(archiveDir, destination)
+    await fs.writeTextFile(keeperJsonPath, JSON.stringify(backup))
 
-    const nextBackups = [...this.backups, backup]
-    await this.setItem('backups', nextBackups)
-
-    this.backups = nextBackups
+    const nextBackups = [...this.store.backups, backup]
+    this.store.backups = nextBackups
+    this.updateStore()
   }
 
   /**
@@ -103,9 +152,20 @@ export class Storage {
    */
   async loadBackup(backup: Backup) {
     const archiveDir = await this.getArchiveDir(backup.type)
+    const backupDir = this.getBackupDir(backup)
 
     await removeDir(archiveDir)
-    await copyDir(await path.join(keeperDir, backup.name), archiveDir)
+    await copyDir(await path.join(keeperDir, backupDir), archiveDir)
+  }
+
+  /**
+   * Update backup information
+   * @param nextBackup Backup to use
+   */
+  async updateBackup(nextBackup: Backup) {
+    const backup = this.store.backups.find(backup => backup.id === nextBackup.id)
+    Object.assign(backup, nextBackup, { lastUpdate: dayjs().format('YYYY-MM-DD HH:mm:ss') })
+    await this.updateStore()
   }
 
   /**
@@ -113,25 +173,15 @@ export class Storage {
    * @param id Id of backup to remove
    */
   async removeBackup(id: string) {
-    const index = this.backups.findIndex(backup => backup.id === id)
-    const dir = await path.join(keeperDir, this.backups[index].name)
+    const index = this.store.backups.findIndex(backup => backup.id === id)
+    const dir = await path.join(keeperDir, this.store.backups[index].name)
 
-    const nextBackups = [...this.backups]
+    const nextBackups = [...this.store.backups]
     nextBackups.splice(index, 1)
-
     await removeDir(dir)
-    await this.setItem('backups', nextBackups)
 
-    this.backups = nextBackups
-  }
-
-  /**
-   * Set data of item in store
-   * @param key Key of data
-   * @param value Value of data
-   */
-  async setItem<T extends keyof Store>(key: T, value: Store[T]) {
-    await forage.setItem(key, value)
+    this.store.backups = nextBackups
+    await this.updateStore()
   }
 }
 

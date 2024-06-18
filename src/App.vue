@@ -5,7 +5,6 @@
       <el-select
         v-model="currentGame"
         class="game-select"
-        :size="store.fontSize > 18 ? 'large' : store.fontSize > 14 ? 'default' : 'small'"
         :placeholder="text.gameNamePlaceholder"
         clearable
       >
@@ -44,11 +43,16 @@
         <li v-for="backup in filteredBackups" :key="backup.id">
           <header>
             <!-- Name of backup -->
-            <b class="name">{{ backup.name }}</b>
+            <b class="name">
+              {{ backup.name === 'quickBackup' ? text.quickBackup : backup.name }}
+            </b>
 
             <!-- Action buttons -->
             <div class="actions">
               <el-button type="primary" @click="loadBackup(backup)">{{ text.load }}</el-button>
+              <el-button type="primary" @click="showUpdateModal(backup)">
+                {{ text.update }}
+              </el-button>
               <el-button type="danger" @click="removeBackup(backup.id)">{{
                 text.remove
               }}</el-button>
@@ -129,6 +133,68 @@
     </el-form>
   </el-dialog>
 
+  <!-- Update dialog -->
+  <el-dialog
+    v-model="showUpdate"
+    :title="text.update"
+    width="25em"
+    draggable
+    align-center
+    @close="closeUpdateModal"
+  >
+    <!-- Form -->
+    <el-form
+      :model="updateFormState"
+      ref="updateFormRef"
+      label-position="top"
+      @submit.prevent="submitUpdate"
+    >
+      <!-- Name -->
+      <el-form-item
+        :label="text.nameLabel"
+        prop="name"
+        :rules="[{ required: true, validator: nameValidator }]"
+      >
+        <el-input v-model="updateFormState.name" :placeholder="text.namePlaceholder" />
+      </el-form-item>
+
+      <!-- Game -->
+      <el-form-item
+        :label="text.backupTypeLabel"
+        prop="type"
+        :rules="[{ required: true, message: text.backupTypeRequiredMessage }]"
+      >
+        <el-select
+          v-model="updateFormState.type"
+          :placeholder="text.backupTypePlaceholder"
+          disabled
+        >
+          <el-option
+            v-for="gameName in gameNames"
+            :key="gameName"
+            :label="text[gameName]"
+            :value="gameName"
+          />
+        </el-select>
+      </el-form-item>
+
+      <!-- Description -->
+      <el-form-item :label="text.descriptionLabel" prop="description">
+        <el-input
+          v-model="updateFormState.description"
+          type="textarea"
+          :placeholder="text.descriptionPlaceholder"
+          rows="5"
+          resize="none"
+        />
+      </el-form-item>
+
+      <!-- Buttons -->
+      <el-button type="primary" native-type="submit">{{ text.submitText }}</el-button>
+      <el-button @click="closeUpdateModal">{{ text.cancelText }}</el-button>
+    </el-form>
+  </el-dialog>
+
   <!-- Settings dialog -->
   <el-dialog v-model="showSettings" :title="text.settings" width="25em" draggable align-center>
     <!-- Form -->
@@ -168,10 +234,7 @@ import 'element-plus/es/components/message-box/style/css'
 
 const storage = await Storage.create()
 const store = reactive<Store>({
-  backups: storage.backups,
-  fontSize: storage.fontSize,
-  theme: storage.theme,
-  lang: storage.lang
+  ...storage.store
 })
 
 const gameNames: BackupType[] = ['DarkSoulsIII', 'EldenRing']
@@ -189,11 +252,15 @@ const filteredBackups = computed(() =>
 
 const text = computed(() => (store.lang === 'en' ? en : zh))
 
-const showBackUp = ref(false)
-const backupFormRef = ref<FormInstance>()
-const backupFormState = reactive<BackupData>({})
+/** Change current language */
+function changeLanguage() {
+  const nextLang = store.lang === 'en' ? 'zh' : 'en'
+  store.lang = nextLang
+  storage.updateStore()
+}
 
 const showSettings = ref<boolean>(false)
+
 watchEffect(() => {
   const isDarkMode = store.theme === 'dark'
   const isSystemDarkMode =
@@ -202,22 +269,8 @@ watchEffect(() => {
   document.documentElement.classList[isDarkMode || isSystemDarkMode ? 'add' : 'remove']('dark')
   document.body.style.setProperty('--font-size', `${store.fontSize}px`)
 
-  storage.setItem('theme', store.theme)
-  storage.setItem('fontSize', store.fontSize)
+  storage.updateStore()
 })
-
-/** Change current language */
-function changeLanguage() {
-  const nextLang = store.lang === 'en' ? 'zh' : 'en'
-  store.lang = nextLang
-  storage.setItem('lang', nextLang)
-}
-
-/** Close modal of backing up */
-function closeBackUpModal() {
-  showBackUp.value = false
-  backupFormRef.value.resetFields()
-}
 
 /**
  * Check whether the name is legal
@@ -229,12 +282,24 @@ function nameValidator(_: any, value: string | undefined, cb: Function) {
   const name = value?.trim()
 
   if (!name) return cb(new Error(text.value.nameErrorMessageEmpty))
-  else if (store.backups.find(backup => backup.name === name))
+  else if (
+    store.backups.find(backup => backup.type === backupFormState.type && backup.name === name)
+  )
     return cb(new Error(text.value.nameErrorMessageDuplicate))
   else if (!/^.{3,36}$/.test(value)) return cb(new Error(text.value.nameErrorMessageLength))
   else if (/[\\/:*?"<>|]/.test(value)) return cb(new Error(text.value.nameErrorMessageIllegal))
 
   return cb()
+}
+
+const showBackUp = ref(false)
+const backupFormRef = ref<FormInstance>()
+const backupFormState = reactive<BackupData>({})
+
+/** Close modal of backing up */
+function closeBackUpModal() {
+  backupFormRef.value.resetFields()
+  showBackUp.value = false
 }
 
 /** Submit backing up form */
@@ -275,7 +340,7 @@ async function backUp(data: BackupData) {
     return
   }
   ElMessage.success(text.value.backupSucceeded)
-  store.backups = storage.backups
+  store.backups = storage.store.backups
 }
 
 /**
@@ -297,7 +362,37 @@ async function loadBackup(backup: Backup) {
     ElMessage.error(text.value.loadingFailed)
     return
   }
-  ElMessage.success(text.value.loadingFailed)
+  ElMessage.success(text.value.loadingSucceeded)
+}
+
+const showUpdate = ref(false)
+const updateFormRef = ref<FormInstance>()
+const updateFormState = reactive<Backup>({} as Backup)
+
+function showUpdateModal(backup: Backup) {
+  Object.assign(updateFormState, backup)
+  showUpdate.value = true
+}
+
+/** Close modal of updating */
+function closeUpdateModal() {
+  updateFormRef.value.resetFields()
+  showUpdate.value = false
+}
+
+/** Submit updating form */
+async function submitUpdate() {
+  const isVerified = await updateFormRef.value.validate()
+  if (!isVerified) return
+
+  const [err] = await to(storage.updateBackup({ ...updateFormState }))
+  if (err) {
+    ElMessage.error(text.value.updateFailed)
+    return
+  }
+  ElMessage.success(text.value.updateSucceeded)
+  store.backups = storage.store.backups
+  closeUpdateModal()
 }
 
 /**
@@ -321,7 +416,7 @@ async function removeBackup(id: string) {
     return
   }
   ElMessage.success(text.value.removalSucceeded)
-  store.backups = storage.backups
+  store.backups = storage.store.backups
 }
 </script>
 
