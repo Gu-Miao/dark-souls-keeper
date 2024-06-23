@@ -81,7 +81,7 @@ export class Storage {
   /** Scan archives */
   async scanArchives() {
     const entires = await fs.readDir(keeperDir)
-    const backups = []
+    const backups: Backup[] = []
 
     for (const entry of entires) {
       if (!entry.children) continue
@@ -98,7 +98,9 @@ export class Storage {
       } catch {}
     }
 
-    return backups
+    return backups.sort(
+      (before, after) => dayjs(after.lastUpdate).valueOf() - dayjs(before.lastUpdate).valueOf()
+    )
   }
 
   /**
@@ -141,7 +143,7 @@ export class Storage {
     await copyDir(archiveDir, destination)
     await fs.writeTextFile(keeperJsonPath, JSON.stringify(backup))
 
-    const nextBackups = [...this.store.backups, backup]
+    const nextBackups = [backup, ...this.store.backups]
     this.store.backups = nextBackups
     this.updateStore()
   }
@@ -163,8 +165,24 @@ export class Storage {
    * @param nextBackup Backup to use
    */
   async updateBackup(nextBackup: Backup) {
-    const backup = this.store.backups.find(backup => backup.id === nextBackup.id)
-    Object.assign(backup, nextBackup, { lastUpdate: dayjs().format('YYYY-MM-DD HH:mm:ss') })
+    const index = this.store.backups.findIndex(backup => backup.id === nextBackup.id)
+    const backup = this.store.backups[index]
+    const mergedBackup = {
+      ...backup,
+      ...nextBackup,
+      lastUpdate: dayjs().format('YYYY-MM-DD HH:mm:ss')
+    }
+
+    let nextBackups = [...this.store.backups]
+    nextBackups.splice(index, 1)
+    nextBackups = [mergedBackup, ...nextBackups]
+
+    const backupDir = this.getBackupDir(backup)
+    const keeperJsonPath = await path.join(keeperDir, backupDir, jsonName)
+
+    await fs.writeTextFile(keeperJsonPath, JSON.stringify(backup))
+
+    this.store.backups = nextBackups
     await this.updateStore()
   }
 
@@ -174,10 +192,11 @@ export class Storage {
    */
   async removeBackup(id: string) {
     const index = this.store.backups.findIndex(backup => backup.id === id)
-    const dir = await path.join(keeperDir, this.store.backups[index].name)
+    const backupDir = this.getBackupDir(this.store.backups[index])
+    const dir = await path.join(keeperDir, backupDir)
 
     const nextBackups = [...this.store.backups]
-    nextBackups.splice(index, 1)
+    this.store.backups.splice(index, 1)
     await removeDir(dir)
 
     this.store.backups = nextBackups

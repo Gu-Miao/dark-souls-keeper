@@ -31,7 +31,7 @@
     </header>
 
     <!-- Search -->
-    <el-input v-model="search" autocomplete="false" :placeholder="text.searchPlaceholder" />
+    <el-input v-model.trim="search" autocomplete="false" :placeholder="text.searchPlaceholder" />
 
     <!-- List -->
     <ul class="list">
@@ -93,7 +93,7 @@
         prop="name"
         :rules="[{ required: true, validator: nameValidator }]"
       >
-        <el-input v-model="backupFormState.name" :placeholder="text.namePlaceholder" />
+        <el-input v-model.trim="backupFormState.name" :placeholder="text.namePlaceholder" />
       </el-form-item>
 
       <!-- Game -->
@@ -119,7 +119,7 @@
       <!-- Description -->
       <el-form-item :label="text.descriptionLabel" prop="description">
         <el-input
-          v-model="backupFormState.description"
+          v-model.trim="backupFormState.description"
           type="textarea"
           :placeholder="text.descriptionPlaceholder"
           rows="5"
@@ -155,7 +155,7 @@
         prop="name"
         :rules="[{ required: true, validator: nameValidator }]"
       >
-        <el-input v-model="updateFormState.name" :placeholder="text.namePlaceholder" />
+        <el-input v-model.trim="updateFormState.name" :placeholder="text.namePlaceholder" />
       </el-form-item>
 
       <!-- Game -->
@@ -181,7 +181,7 @@
       <!-- Description -->
       <el-form-item :label="text.descriptionLabel" prop="description">
         <el-input
-          v-model="updateFormState.description"
+          v-model.trim="updateFormState.description"
           type="textarea"
           :placeholder="text.descriptionPlaceholder"
           rows="5"
@@ -243,7 +243,7 @@ const currentGame = ref<BackupType>()
 const search = ref('')
 const filteredBackups = computed(() =>
   store.backups.filter(backup => {
-    const matchSearch = backup.name.toLowerCase().includes(search.value.trim().toLocaleLowerCase())
+    const matchSearch = backup.name.toLowerCase().includes(search.value.toLocaleLowerCase())
     const matchType = currentGame.value ? backup.type === currentGame.value : true
 
     return matchSearch && matchType
@@ -390,6 +390,7 @@ async function submitUpdate() {
     ElMessage.error(text.value.updateFailed)
     return
   }
+  console.log(store.backups)
   ElMessage.success(text.value.updateSucceeded)
   store.backups = storage.store.backups
   closeUpdateModal()
