@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## 1.5.0
+
+2024-06-23
+
+- Rewrite implemention of storage
+- Display data in reverse chronological order
+- Add update button for updating backup information
+
+---
+
+- 重新实现了本地存储的逻辑
+- 以时间倒序展示数据
+- 添加更新按钮以修改备份信息
+
 ## 1.4.0
 
 2024-06-17
