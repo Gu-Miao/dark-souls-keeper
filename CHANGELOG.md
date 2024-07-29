@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## 1.6.0
+
+2024-07-29
+
+- Fix issues of Storage
+- Update UI
+- Add Sekiro support
+- Add default value of type when backing up
+
+---
+
+- 修复 Storage 模块的问题
+- 更新了 UI
+- 添加了对只狼的支持
+- 当备份存档时增加了游戏类型的默认值
+
 ## 1.5.0
 
 2024-06-23
