@@ -7,6 +7,7 @@
         class="game-select"
         :placeholder="text.gameNamePlaceholder"
         clearable
+        @change="handleGameChange"
       >
         <el-option
           v-for="gameName in gameNames"
@@ -44,25 +45,35 @@
           <header>
             <!-- Name of backup -->
             <b class="name">
+              【{{ text[backup.type] }}】
               {{ backup.name === 'quickBackup' ? text.quickBackup : backup.name }}
             </b>
 
             <!-- Action buttons -->
             <div class="actions">
-              <el-button type="primary" @click="loadBackup(backup)">{{ text.load }}</el-button>
-              <el-button type="primary" @click="showUpdateModal(backup)">
-                {{ text.update }}
-              </el-button>
-              <el-button type="danger" @click="removeBackup(backup.id)">{{
-                text.remove
-              }}</el-button>
+              <el-button
+                type="primary"
+                circle
+                :title="text.load"
+                :icon="Check"
+                @click="loadBackup(backup)"
+              />
+              <el-button
+                type="primary"
+                circle
+                :title="text.update"
+                :icon="Edit"
+                @click="showUpdateModal(backup)"
+              />
+              <el-button
+                type="danger"
+                circle
+                :title="text.remove"
+                :icon="Delete"
+                @click="removeBackup(backup.id)"
+              />
             </div>
           </header>
-
-          <!-- Type of backup -->
-          <div>
-            <span class="type">{{ text[backup.type] }}</span>
-          </div>
 
           <!-- Description of backup -->
           <div class="description">{{ backup.description }}</div>
@@ -201,7 +212,7 @@
     <el-form label-position="top">
       <!-- Font size -->
       <el-form-item :label="text.fontSizeLabel">
-        <el-input-number v-model="store.fontSize" :min="12" :max="24" :step="1" />
+        <el-input-number v-model="store.fontSize" :min="14" :max="20" :step="1" />
       </el-form-item>
 
       <!-- Theme -->
@@ -222,6 +233,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watchEffect } from 'vue'
 import { ElMessage, ElMessageBox, FormInstance } from 'element-plus'
+import { Check, Edit, Delete } from '@element-plus/icons-vue'
 import IconChinese from './components/IconChinese.vue'
 import IconEnglish from './components/IconEnglish.vue'
 import IconSettings from './components/IconSettings.vue'
@@ -237,8 +249,13 @@ const store = reactive<Store>({
   ...storage.store
 })
 
-const gameNames: BackupType[] = ['DarkSoulsIII', 'EldenRing']
+const gameNames: BackupType[] = ['DarkSoulsIII', 'EldenRing', 'Sekiro']
 const currentGame = ref<BackupType>()
+
+/** Set default value of type of backing up */
+function handleGameChange() {
+  backupFormState.type = currentGame.value
+}
 
 const search = ref('')
 const filteredBackups = computed(() =>
@@ -440,6 +457,10 @@ ul {
 .el-button {
   padding: 0.5em 0.8em;
   height: auto;
+
+  &.is-circle {
+    width: auto;
+  }
 }
 .el-input {
   line-height: 1.57;
@@ -527,13 +548,6 @@ ul {
       font-weight: bold;
       user-select: text;
       margin-right: 0.5em;
-    }
-    .type {
-      font-size: 0.65em;
-      padding: 0.4em 0.8em;
-      color: white;
-      background-color: var(--el-color-primary);
-      border-radius: 0.4em;
     }
     .description {
       color: #666;

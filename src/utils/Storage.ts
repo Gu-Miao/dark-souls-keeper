@@ -8,7 +8,7 @@ const dataDir = await path.dataDir()
 const keeperDir = await path.join(dataDir, 'DarkSoulsKeeper')
 const keeperJsonPath = await path.join(keeperDir, jsonName)
 
-export type BackupType = 'DarkSoulsIII' | 'EldenRing'
+export type BackupType = 'DarkSoulsIII' | 'EldenRing' | 'Sekiro'
 
 export type Backup = {
   id: string

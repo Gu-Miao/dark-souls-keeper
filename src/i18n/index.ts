@@ -2,6 +2,7 @@ type Keys =
   | 'gameNamePlaceholder'
   | 'DarkSoulsIII'
   | 'EldenRing'
+  | 'Sekiro'
   | 'gettingBackupsFailed'
   | 'backUp'
   | 'quickBackup'
