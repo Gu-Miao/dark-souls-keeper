@@ -24,7 +24,7 @@
         "readFile": true,
         "removeDir": true,
         "removeFile": true,
-        "renameFile": false,
+        "renameFile": true,
         "scope": ["$DATA/**/*"],
         "writeFile": true
       }

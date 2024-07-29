@@ -178,9 +178,14 @@ export class Storage {
     nextBackups = [mergedBackup, ...nextBackups]
 
     const backupDir = this.getBackupDir(backup)
+    const backupDirPath = await path.join(keeperDir, backupDir)
     const keeperJsonPath = await path.join(keeperDir, backupDir, jsonName)
 
+    const nextBackupDir = this.getBackupDir(mergedBackup)
+    const nextBackupDirPath = await path.join(keeperDir, nextBackupDir)
+
     await fs.writeTextFile(keeperJsonPath, JSON.stringify(backup))
+    await fs.renameFile(backupDirPath, nextBackupDirPath)
 
     this.store.backups = nextBackups
     await this.updateStore()
@@ -196,7 +201,7 @@ export class Storage {
     const dir = await path.join(keeperDir, backupDir)
 
     const nextBackups = [...this.store.backups]
-    this.store.backups.splice(index, 1)
+    nextBackups.splice(index, 1)
     await removeDir(dir)
 
     this.store.backups = nextBackups
@@ -224,9 +229,9 @@ async function copyDir(source: string, destination: string) {
   for (let dirent of dirents) {
     const destinationPath = await path.join(destination, dirent.name)
     if (dirent.children) {
-      copyDir(dirent.path, destinationPath)
+      await copyDir(dirent.path, destinationPath)
     } else {
-      fs.copyFile(dirent.path, destinationPath)
+      await fs.copyFile(dirent.path, destinationPath)
     }
   }
 }
